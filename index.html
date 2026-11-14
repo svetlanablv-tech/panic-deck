@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Panic Deck</title>
+<meta name="theme-color" content="#1F2A44">
+<meta name="description" content="Panic Deck: 80 cards for the moment panic hits. Press once, do what the card says.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/AtkinsonHyperlegible-0.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/AtkinsonHyperlegible-1.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/DMSans-2.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/DMSans-2.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+</style>
+<style>
+/* Layout concept: one calm column on deep navy. The pastel cards are the only color, so they read first. */
+:root{
+  --navy:#1F2A44; --navy2:#2A3659; --paper:#F7F2E9; --muted:#B9C0D3; --peach:#F0B8A0; --ink:#2C3956;
+  --line:rgba(247,242,233,.18);
+  --font-display:'DM Sans',system-ui,sans-serif; --font-body:'Atkinson Hyperlegible',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:var(--navy);color:var(--paper);font-family:var(--font-body);font-size:18px;line-height:1.45;
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#app{max-width:460px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+.screen{flex:1;display:flex;flex-direction:column;gap:18px;padding-block:14px 26px}
+.screen[hidden]{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.brand{font-family:var(--font-display);font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:.8rem;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:10px 4px;min-height:44px}
+:focus-visible{outline:3px solid var(--peach);outline-offset:3px;border-radius:8px}
+h1,h2{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;line-height:1.15;margin:0}
+h2{font-size:1.5rem}
+p{margin:0}
+.small{color:var(--muted);font-size:.9rem}
+
+/* home */
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding-block:6px}
+.panic{position:relative;width:min(62vw,250px);aspect-ratio:1;border-radius:50%;border:0;background:var(--peach);color:var(--ink);
+  font-family:var(--font-display);font-weight:700;font-size:clamp(1.5rem,7vw,2rem);letter-spacing:.14em;
+  box-shadow:0 0 0 14px rgba(240,184,160,.16),0 0 0 32px rgba(240,184,160,.08);animation:pulse 6s ease-in-out infinite}
+.panic:active{transform:scale(.97)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 14px rgba(240,184,160,.16),0 0 0 32px rgba(240,184,160,.08)}50%{box-shadow:0 0 0 20px rgba(240,184,160,.14),0 0 0 42px rgba(240,184,160,.06)}}
+.hint{color:var(--muted);text-align:center}
+.toggle{display:flex;gap:14px;align-items:center;background:var(--navy2);border-radius:16px;padding:14px 16px;cursor:pointer;min-height:64px}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.knob{flex:none;width:52px;height:30px;border-radius:99px;background:#4A5778;position:relative;transition:background .2s}
+.knob::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:var(--paper);transition:transform .2s}
+.toggle input:checked+.knob{background:#7CB6AE}
+.toggle input:checked+.knob::after{transform:translateX(22px)}
+.toggle input:focus-visible+.knob{outline:3px solid var(--peach);outline-offset:3px}
+.toggle b{display:block;font-family:var(--font-display)}
+.toggle small{color:var(--muted);font-size:.85rem;line-height:1.3;display:block}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{min-height:52px;border-radius:14px;border:1.5px solid var(--line);background:transparent;padding:10px 12px;font-family:var(--font-display);font-weight:700;font-size:.95rem;line-height:1.2}
+.btn.primary{background:var(--peach);color:var(--ink);border-color:var(--peach)}
+.btn.full{grid-column:1/-1}
+.btn:active{transform:scale(.98)}
+
+/* card + flip */
+.stage{display:flex;justify-content:center;perspective:1200px}
+.flip{position:relative;width:min(80vw,330px);aspect-ratio:63/88}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.flip .f-back{transform:rotateY(0)}
+.flip .f-front{transform:rotateY(180deg)}
+.flip.shown .f-back{transform:rotateY(-180deg)}
+.flip.shown .f-front{transform:rotateY(0)}
+.cw{container-type:inline-size;width:100%;height:100%}
+.card{width:100%;height:100%;background:var(--bg);color:var(--ink);border-radius:4.8cqw;overflow:hidden;position:relative;font-family:var(--font-body);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.bgart{position:absolute;inset:0;width:100%;height:100%;display:block}
+.grainov{position:absolute;inset:0;background-image:var(--grain);background-size:200px 200px}
+.in{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:6cqw 6.5cqw 6cqw}
+.hd{display:flex;justify-content:space-between;align-items:flex-start}
+.nm{font-family:var(--font-display);font-weight:700;font-size:3.8cqw;letter-spacing:.22em;text-transform:uppercase;padding-top:1.2cqw}
+.no{font-family:var(--font-display);font-weight:700;font-size:11cqw;line-height:1}
+.ttl{font-family:var(--font-display);font-weight:700;line-height:1;letter-spacing:-.025em;margin-top:9cqw;text-wrap:balance;font-size:13cqw}
+.txt{font-size:5.4cqw;line-height:1.34;margin-top:4.2cqw;text-wrap:pretty;max-width:50cqw}
+.sp{flex:1}
+.ft{display:flex;justify-content:space-between;align-items:center}
+.pill{font-family:var(--font-display);font-weight:700;font-size:4.6cqw;background:var(--ink);color:var(--paper);border-radius:99px;padding:1.4cqw 4cqw;white-space:nowrap}
+.tg{width:9.5cqw;height:9.5cqw;border-radius:50%;border:.6cqw solid var(--ink);display:grid;place-items:center}
+.tg svg{width:5.6cqw;height:5.6cqw;fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.back{width:100%;height:100%;border-radius:4.8cqw;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.back svg{width:100%;height:100%;display:block}
+
+/* timer */
+.timer{display:flex;align-items:center;justify-content:center;gap:16px;min-height:76px}
+.ring{position:relative;width:76px;height:76px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .bg{stroke:rgba(247,242,233,.16)}
+.ring .fg{stroke:var(--peach);stroke-linecap:round}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:1rem}
+.msg{text-align:center;color:var(--muted);min-height:1.5em}
+.dots{display:flex;justify-content:center;gap:8px}
+.dots[hidden]{display:none}
+.dots i{width:10px;height:10px;border-radius:50%;background:rgba(247,242,233,.25)}
+.dots i.on{background:var(--peach)}
+.actions{display:flex;flex-direction:column;gap:10px}
+
+/* breathing */
+.orbwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.orbbox{width:min(70vw,290px);aspect-ratio:1;display:grid;place-items:center}
+.orb{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#C9E6E2,#5E9C9A);transform:scale(.5);transition:transform 4s ease-in-out}
+.orb.in{transform:scale(1)}
+.orb.out{transform:scale(.5);transition-duration:6s}
+.phase{font-family:var(--font-display);font-weight:700;font-size:1.8rem;min-height:1.2em;text-align:center}
+.count{color:var(--muted);font-size:1.1rem;min-height:1.4em}
+.chips{display:flex;gap:8px;justify-content:center}
+.chip{min-height:44px;padding:8px 18px;border-radius:99px;border:1.5px solid var(--line);background:transparent;font-family:var(--font-display);font-weight:700}
+.chip[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+
+/* deck + about */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.tab{flex:none;min-height:44px;padding:8px 16px;border-radius:99px;border:1.5px solid var(--line);background:transparent;font-family:var(--font-display);font-weight:700;display:flex;gap:8px;align-items:center}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.tab i{width:14px;height:14px;border-radius:50%;display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.tile{border:0;background:none;padding:0;aspect-ratio:63/88;border-radius:5cqw;text-align:left}
+.tile .cw{pointer-events:none}
+.about p{margin-bottom:12px}
+.about ul{padding-left:0;list-style:none;margin:0 0 12px;display:flex;flex-direction:column;gap:10px}
+.about li{display:flex;gap:12px;align-items:center}
+.about .tg{flex:none;width:34px;height:34px;border-color:var(--paper)}
+.about .tg svg{width:20px;height:20px;stroke:var(--paper)}
+.about a{color:var(--peach)}
+@media (prefers-reduced-motion:reduce){
+  .panic{animation:none}
+  .flip .face{transition:opacity .3s}
+  .flip .f-back,.flip .f-front{transform:none}
+  .flip .f-front{opacity:0}
+  .flip.shown .f-back{opacity:0;transform:none}
+  .flip.shown .f-front{opacity:1;transform:none}
+  .orb{transition:none}
+  .knob,.knob::after{transition:none}
+}
+</style>
+</head>
+<body>
+<main id="app">
+
+<section id="s-home" class="screen" aria-labelledby="h-home">
+  <div class="top"><span class="brand" id="h-home">Panic Deck</span><button class="link" data-go="about">About</button></div>
+  <div class="center">
+    <button class="panic" id="panic" aria-label="Panic button. Press to draw a card">PANIC</button>
+    <p class="hint">press once, then do what the card says</p>
+  </div>
+  <label class="toggle"><input type="checkbox" id="pub"><span class="knob" aria-hidden="true"></span>
+    <span><b>I'm in public</b><small>Only cards nobody around will notice</small></span></label>
+  <div class="row">
+    <button class="btn" id="series">3 cards in a row</button>
+    <button class="btn" id="goBreathe">Breathe with me</button>
+    <button class="btn" id="land">It passed. Land softly</button>
+    <button class="btn" data-go="deck">All 80 cards</button>
+  </div>
+</section>
+
+<section id="s-card" class="screen" hidden aria-label="Your card">
+  <div class="top"><button class="link" id="cardBack">Back</button><span class="brand" id="cardKind"></span></div>
+  <div class="stage"><div class="flip" id="flip"><div class="face f-back" id="fBack"></div><div class="face f-front" id="fFront"></div></div></div>
+  <div class="dots" id="dots" hidden></div>
+  <div class="timer" id="timer"></div>
+  <p class="msg" id="msg" role="status"></p>
+  <div class="actions" id="actions"></div>
+</section>
+
+<section id="s-breathe" class="screen" hidden aria-label="Breathing circle">
+  <div class="top"><button class="link" id="breatheBack">Back</button><span class="brand">Breathe</span></div>
+  <div class="orbwrap">
+    <div class="orbbox"><div class="orb" id="orb"></div></div>
+    <div class="phase" id="phase">Ready</div>
+    <div class="count" id="bcount">In for 4, out for 6</div>
+    <div class="chips" role="group" aria-label="Length"><button class="chip" data-min="1" aria-pressed="false">1 min</button><button class="chip" data-min="3" aria-pressed="true">3 min</button><button class="chip" data-min="5" aria-pressed="false">5 min</button></div>
+  </div>
+  <div class="actions"><button class="btn primary" id="bgo">Start</button></div>
+</section>
+
+<section id="s-deck" class="screen" hidden aria-label="All cards">
+  <div class="top"><button class="link" data-go="home">Back</button><span class="brand">All 80 cards</span></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="s-about" class="screen about" hidden aria-labelledby="h-about">
+  <div class="top"><button class="link" data-go="home">Back</button><span class="brand">About</span></div>
+  <h2 id="h-about">How this works</h2>
+  <p>Press the button and you get one card. Do what it says. Not helping? Draw another. There are no wrong cards.</p>
+  <ul>
+    <li><span class="tg" id="ic-i"></span><span><b>In public</b>: nobody around will notice. Bus, meeting, queue.</span></li>
+    <li><span class="tg" id="ic-s"></span><span><b>Needs space</b>: stand up or move a little.</span></li>
+    <li><span class="tg" id="ic-t"></span><span><b>Needs a thing</b>: water, pen, phone, tap.</span></li>
+  </ul>
+  <p>Five suits of 16: <b>Breathe</b>, <b>Ground</b>, <b>Reframe</b>, <b>Move</b> and <b>Land</b> for after the wave has passed.</p>
+  <p>Panic Deck is a self-help tool. It is not medical advice or treatment. If something feels more serious than panic, or chest pain is new for you, contact your local emergency number or a doctor. For support near you, try <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a>.</p>
+  <p class="small">No account, no tracking. The only thing saved is your "I'm in public" switch, on this device.</p>
+</section>
+
+</main>
+
+<script>
+const DATA = {
+  "deck": "Panic Deck",
+  "format": "Poker 63x88 mm, bleed 3 mm, 300 dpi",
+  "tags": {
+    "i": "In public - works anywhere: nobody around will notice. Bus, meeting, queue",
+    "s": "Needs space - stand up or move a little",
+    "t": "Needs a thing - water, pen, phone, tap"
+  },
+  "suits": [
+    {
+      "id": "breathe",
+      "name": "Breathe",
+      "band": "#8FC3C0",
+      "key": "#5E9C9A",
+      "cards": [
+        {
+          "n": 1,
+          "title": "Sigh It Out",
+          "text": "Breathe in normally. Let out one big sigh. Three times.",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 2,
+          "title": "Long Out",
+          "text": "Breathe in for 4, out for 6. Five rounds.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 3,
+          "title": "Belly Hand",
+          "text": "Put a hand on your belly. Breathe so only that hand moves.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 4,
+          "title": "Straw Breath",
+          "text": "Breathe out slowly through pursed lips, as if through a straw.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 5,
+          "title": "Quiet Hum",
+          "text": "Breathe in through your nose. Hum low on the way out, or hum inside your head.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 6,
+          "title": "Shoulder Drop",
+          "text": "Breathe in, shoulders up to your ears. Breathe out, let them drop. Five times.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 7,
+          "title": "Window Fog",
+          "text": "Imagine slowly fogging up a window. Keep the exhale smooth and long.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 8,
+          "title": "Box",
+          "text": "In for 4, hold 4, out for 4, hold 4. If the holds feel tight, skip them.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 9,
+          "title": "Countdown",
+          "text": "Count down from 10 to 1, one number per exhale.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 10,
+          "title": "Flower & Candle",
+          "text": "In through your nose for 3, like smelling a flower. Out for 5, like blowing a candle.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 11,
+          "title": "Soft Nose",
+          "text": "Breathe only through your nose, quietly. Follow the air in and out.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 12,
+          "title": "Count Exhales",
+          "text": "Count each exhale up to 10, then start over. Lost count? Start at 1.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 13,
+          "title": "Seat Anchor",
+          "text": "Feel your seat and back holding you up. Breathe out into that support.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 14,
+          "title": "Slow Five",
+          "text": "Breathe in for 5, out for 5. That is about six breaths a minute.",
+          "time": "5 min",
+          "tag": "i"
+        },
+        {
+          "n": 15,
+          "title": "Breath Wave",
+          "text": "Picture each breath as a wave rolling in, then rolling back out.",
+          "time": "5 min",
+          "tag": "i"
+        },
+        {
+          "n": 16,
+          "title": "Follow the Circle",
+          "text": "Open the app and breathe along with the circle for five minutes.",
+          "time": "5 min",
+          "tag": "t"
+        }
+      ]
+    },
+    {
+      "id": "ground",
+      "name": "Ground",
+      "band": "#A9B4E0",
+      "key": "#7C8BC4",
+      "cards": [
+        {
+          "n": 1,
+          "title": "Feet Down",
+          "text": "Press both feet into the floor. Notice the pressure.",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 2,
+          "title": "Name Five",
+          "text": "Name five things you can see. Out loud if you can, in your head if not.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 3,
+          "title": "Coldest Thing",
+          "text": "Touch the coldest thing within reach. Describe it in one word.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 4,
+          "title": "Where & When",
+          "text": "Say today's date, where you are, and what you're doing later.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 5,
+          "title": "Back Support",
+          "text": "Press your back into the chair, wall or seat. Feel it hold you.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 6,
+          "title": "Texture Hunt",
+          "text": "Find three different surfaces. Touch each one and name it in one word.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 7,
+          "title": "Color Scan",
+          "text": "Pick a color. Find five things in that color around you.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 8,
+          "title": "Listen Out",
+          "text": "Close your eyes. Find the farthest sound, then the nearest, then your own breath.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 9,
+          "title": "Pocket Object",
+          "text": "Hold any small object you have on you. Notice its weight, edges and warmth.",
+          "time": "2 min",
+          "tag": "t"
+        },
+        {
+          "n": 10,
+          "title": "Taste Check",
+          "text": "Notice the taste in your mouth. Got gum, a mint or water? Use it.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 11,
+          "title": "5-4-3-2-1",
+          "text": "Find 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 12,
+          "title": "Describe It",
+          "text": "Describe any object in detail, as if to someone who has never seen it.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 13,
+          "title": "Alphabet Game",
+          "text": "Pick a category: animals, cities, foods. Name one for each letter.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 14,
+          "title": "Count Back",
+          "text": "Count back from 100 by 7. Too hard? Go by 3.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 15,
+          "title": "Trace It",
+          "text": "Slowly trace your hand with one finger, one finger per breath out.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 16,
+          "title": "Draw What You See",
+          "text": "Draw the object in front of you without lifting your pen. Or trace it in the air.",
+          "time": "5 min",
+          "tag": "t"
+        }
+      ]
+    },
+    {
+      "id": "reframe",
+      "name": "Reframe",
+      "band": "#E3C58C",
+      "key": "#D9B26F",
+      "cards": [
+        {
+          "n": 1,
+          "title": "Name It",
+          "text": "Say: \"This is anxiety. I've felt it before and it passed.\"",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 2,
+          "title": "Ride the Wave",
+          "text": "Panic rises and falls. Don't fight it. Watch it go.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 3,
+          "title": "Might, Not Will",
+          "text": "Swap \"this will happen\" for \"this might happen.\" Say it out loud.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 4,
+          "title": "Just a Thought",
+          "text": "Start the thought with \"I'm having the thought that…\"",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 5,
+          "title": "Most Likely",
+          "text": "Not the worst outcome, not the best. What is the most likely one?",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 6,
+          "title": "Friend Test",
+          "text": "What would you tell a friend who had this thought? Tell yourself.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 7,
+          "title": "Five Years",
+          "text": "Will this matter in 5 days? 5 months? 5 years?",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 8,
+          "title": "Silly Title",
+          "text": "Give the scary story a ridiculous title: \"Catastrophe, Season 4.\"",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 9,
+          "title": "Worry Window",
+          "text": "Write the worry down and give it a time later: \"I'll deal with you at 6.\" Close the page.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 10,
+          "title": "Evidence",
+          "text": "Make two columns: what supports the scary thought, and what doesn't.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 11,
+          "title": "What I Control",
+          "text": "Split a page: what's in my hands, what isn't. Start with the first.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 12,
+          "title": "Done It Before",
+          "text": "Think of three hard moments you got through.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 13,
+          "title": "Tiny Next Step",
+          "text": "What is the smallest next action? Do it. Two minutes is enough.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 14,
+          "title": "Basics Check",
+          "text": "Hungry, thirsty, tired, too much coffee? Sort the basics first.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 15,
+          "title": "Write It Out",
+          "text": "Write everything for five minutes, no editing. Tear it up after if you like.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 16,
+          "title": "Letter From Later",
+          "text": "Write three lines from you, a week from now, already through it.",
+          "time": "5 min",
+          "tag": "t"
+        }
+      ]
+    },
+    {
+      "id": "move",
+      "name": "Move",
+      "band": "#A9C4A7",
+      "key": "#8DAA8B",
+      "cards": [
+        {
+          "n": 1,
+          "title": "Cold Water",
+          "text": "Hold cold water, or a cold can or bottle, to your wrists or neck. Skip it if unpleasant.",
+          "time": "30 sec",
+          "tag": "t"
+        },
+        {
+          "n": 2,
+          "title": "Shake It Out",
+          "text": "Shake out your hands, wrists and feet. Under the table is fine.",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 3,
+          "title": "Squeeze & Release",
+          "text": "Clench your fists for 5 seconds, then let go. Then shoulders, jaw, toes.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 4,
+          "title": "Palm Press",
+          "text": "Press your palms together hard in front of your chest for 10 seconds. Three times.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 5,
+          "title": "Big Stretch",
+          "text": "Arms overhead, stretch tall, then fold forward and hang.",
+          "time": "1 min",
+          "tag": "s"
+        },
+        {
+          "n": 6,
+          "title": "Jaw Unlock",
+          "text": "Open your mouth wide. Massage the hinge by your ears in small circles.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 7,
+          "title": "Slow Sips",
+          "text": "Drink water in small sips. Feel each one go down.",
+          "time": "2 min",
+          "tag": "t"
+        },
+        {
+          "n": 8,
+          "title": "Warm Hands",
+          "text": "Rub your palms together until warm. Use a mug or warm tap if you have one.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 9,
+          "title": "Window Break",
+          "text": "Step outside if you can. If not, look out a window at the farthest point. Five slow breaths.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 10,
+          "title": "Heel Raises",
+          "text": "Rise onto your toes and lower, 30 times. Works in any queue.",
+          "time": "2 min",
+          "tag": "s"
+        },
+        {
+          "n": 11,
+          "title": "Quick Steps",
+          "text": "Walk fast down a hall, street or aisle. Can't stand? March your feet under the desk.",
+          "time": "3 min",
+          "tag": "s"
+        },
+        {
+          "n": 12,
+          "title": "Sort Your Bag",
+          "text": "Sort your bag, pocket or desk. Just that one thing.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 13,
+          "title": "Headphones On",
+          "text": "Play one song. Tap the rhythm on your knee.",
+          "time": "4 min",
+          "tag": "t"
+        },
+        {
+          "n": 14,
+          "title": "Text Someone",
+          "text": "Message someone: \"Rough moment, can you chat?\" Or just \"hi.\"",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 15,
+          "title": "Wash Your Hands",
+          "text": "Wash your hands slowly in warm water. Follow how it feels on your skin.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 16,
+          "title": "Phone-Free Walk",
+          "text": "Walk for 10 minutes wherever you can: street, corridor, park. Phone away.",
+          "time": "10 min",
+          "tag": "s"
+        }
+      ]
+    },
+    {
+      "id": "land",
+      "name": "Land",
+      "band": "#F0CFC9",
+      "key": "#D9A79F",
+      "cards": [
+        {
+          "n": 1,
+          "title": "You Made It",
+          "text": "The wave has passed. Notice that you got through it.",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 2,
+          "title": "Soft Face",
+          "text": "Unclench your jaw and forehead. Let your face go slack.",
+          "time": "30 sec",
+          "tag": "i"
+        },
+        {
+          "n": 3,
+          "title": "Thank Your Body",
+          "text": "Hand on your chest. Say: \"Thanks for trying to protect me.\"",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 4,
+          "title": "Be Kind",
+          "text": "Say to yourself what you would say to a friend after a rough day.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 5,
+          "title": "No Fixing",
+          "text": "You don't have to work out why it happened. Not right now.",
+          "time": "1 min",
+          "tag": "i"
+        },
+        {
+          "n": 6,
+          "title": "Small Win",
+          "text": "Name one thing you did well in the last hour. It can be tiny.",
+          "time": "2 min",
+          "tag": "i"
+        },
+        {
+          "n": 7,
+          "title": "Refuel",
+          "text": "Have a snack or a glass of water. Your body just worked hard.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 8,
+          "title": "Lower the Bar",
+          "text": "Shrink or move one thing you planned for later. Go easy on today.",
+          "time": "3 min",
+          "tag": "i"
+        },
+        {
+          "n": 9,
+          "title": "Cozy Up",
+          "text": "Put on something soft, or wrap yourself in a blanket or jacket.",
+          "time": "3 min",
+          "tag": "t"
+        },
+        {
+          "n": 10,
+          "title": "Do Nothing",
+          "text": "Sit or lie down and do nothing for five minutes. That counts as rest.",
+          "time": "5 min",
+          "tag": "i"
+        },
+        {
+          "n": 11,
+          "title": "Warm Drink",
+          "text": "Make or find something warm to drink. Hold it with both hands.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 12,
+          "title": "Easy Task",
+          "text": "Do one very easy thing, like watering a plant or folding a towel.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 13,
+          "title": "Good Noise",
+          "text": "Play something calming: music, rain sounds, a favorite voice.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 14,
+          "title": "Small Joy",
+          "text": "Do one small thing you enjoy: a song, a snack, a sunny spot.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 15,
+          "title": "Silly Break",
+          "text": "Watch or read something gentle or silly for five minutes.",
+          "time": "5 min",
+          "tag": "t"
+        },
+        {
+          "n": 16,
+          "title": "Gentle Tomorrow",
+          "text": "Ask: what would make tomorrow a little easier? Do just that one thing.",
+          "time": "5 min",
+          "tag": "i"
+        }
+      ]
+    }
+  ],
+  "extras": [
+    {
+      "id": "howto",
+      "title": "How to Use",
+      "text": "Draw one card. Do what it says. Didn't help? Draw the next one. There are no wrong cards."
+    }
+  ]
+};
+const TAG = {
+  i:{label:'In public',d:'<circle cx="8.5" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19c0-3.4 2.3-5.4 5-5.4s5 2 5 5.4"/><path d="M14.5 14.2c.6-.3 1.3-.4 2-.4 2.3 0 4 1.7 4 4.7"/>'},
+  s:{label:'Needs space',d:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'},
+  t:{label:'Needs a thing',d:'<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>'}
+};
+const svgIcon=d=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const PAL={
+  breathe:{bg:'#BFE0DC',l:'#D6EEEA',d:'#ABD4CF',a:'#F6D6C2'},
+  ground:{bg:'#C9D0F0',l:'#DDE2F7',d:'#B8C1EA',a:'#F3E7D0'},
+  reframe:{bg:'#F1D9A6',l:'#F8E8C4',d:'#EACB8E',a:'#FFF7E2'},
+  move:{bg:'#C5DDC2',l:'#D9EBD6',d:'#B5D3B1',a:'#F6EBC8'},
+  land:{bg:'#F0CFC9',l:'#F8E3DF',d:'#E8BFB7',a:'#FFF0DC'}
+};
+/* ---- abstract shapes, one pattern per suit, varied by card number (same as the printed cards) ---- */
+const rng=seed=>{let s=seed*7919+104729;return()=>{s=(s*9301+49297)%233280;return s/233280}};
+const wave=(y,amp,ph,fill,cyc)=>{let d=`M-6 ${y}`;for(let x=-6;x<=70;x+=1.5)d+=` L${x} ${(y+amp*Math.sin(x/63*Math.PI*2*cyc+ph)).toFixed(2)}`;return `<path d="${d} V98 H-6Z" fill="${fill}"/>`};
+const C=(x,y,r,f)=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${f}"/>`;
+let clipN=0;
+function shapes(id,n){
+  const P=PAL[id], r=rng(n+id.length*13), top=C(58,5,17,P.l)+C(58,5,9,P.bg);
+  if(id==='breathe'){const cx=14+r()*36, cy=90+r()*8, s=.7+n*.03; let o='';[[58,P.l],[46,P.d],[34,P.l],[23,P.d],[12,P.a]].forEach(([rad,f])=>o+=C(cx,cy,rad*s,f));return top+o}
+  if(id==='ground'){const k=3+Math.ceil(n/6), cols=[P.d,P.l,P.d,P.a,P.d]; let y=90,o='';
+    for(let i=0;i<k;i++){const w=Math.max(16,46-i*8),h=7.2,x=(8+r()*26)+(46-w)/2-6;o+=`<rect x="${x.toFixed(1)}" y="${(y-h).toFixed(1)}" width="${w}" height="${h+6}" rx="3.6" fill="${cols[i%5]}"/>`;y-=h*.82}return top+o}
+  if(id==='reframe'){const dx=(n-8.5)*3.2,id2='mc'+(++clipN);return top+C(36,70,26,P.l)+`<clipPath id="${id2}"><circle cx="36" cy="70" r="26"/></clipPath><g clip-path="url(#${id2})">${C(36+dx,70,26,P.d)}</g>`+C(14,60,3,P.a)}
+  if(id==='land'){const rr=7+n*.9;return top+C(36,74,rr,P.a)+`<rect x="-6" y="74" width="76" height="24" fill="${P.d}"/><rect x="-6" y="80" width="76" height="18" fill="${P.l}"/><rect x="-6" y="85" width="76" height="13" fill="${P.d}"/>`}
+  return top+wave(66,2+(n%5)*.7,n*.6,P.l,2)+wave(74,2.4+(n%4)*.6,n*.5+1.5,P.d,2.5)+wave(82,2.6,n*.4+3,P.a,3);
+}
+function cardHTML(s,c){const t=TAG[c.tag];
+  return `<div class="cw"><article class="card" style="--bg:${PAL[s.id].bg}" aria-label="${esc(s.name)} ${c.n}: ${esc(c.title)}">
+  <svg class="bgart" viewBox="0 0 63 88" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${shapes(s.id,c.n)}</svg><div class="grainov"></div>
+  <div class="in"><div class="hd"><span class="nm">${s.name}</span><span class="no">${c.n}</span></div>
+  <div class="ttl">${esc(c.title)}</div><div class="txt">${esc(c.text)}</div><div class="sp"></div>
+  <div class="ft"><span class="pill">${c.time}</span><span class="tg" role="img" aria-label="${t.label}">${svgIcon(t.d)}</span></div></div></article></div>`}
+const backHTML=()=>`<div class="cw"><div class="back"><svg viewBox="0 0 63 88" aria-hidden="true"><rect width="63" height="88" fill="#1F2A44"/>
+  <circle cx="0" cy="0" r="22" fill="${PAL.breathe.bg}"/><circle cx="63" cy="0" r="22" fill="${PAL.ground.bg}"/><circle cx="0" cy="88" r="22" fill="${PAL.reframe.bg}"/><circle cx="63" cy="88" r="22" fill="${PAL.move.bg}"/>
+  <circle cx="31.5" cy="44" r="22" fill="#F0CFC9" fill-opacity=".3"/><circle cx="31.5" cy="44" r="15" fill="#F0B8A0"/>
+  <text x="31.5" y="46.3" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="700" font-size="5.6" fill="#2C3956" letter-spacing=".5">PANIC</text></svg></div></div>`;
+
+/* ---- grain tile, made once ---- */
+(function(){try{const c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d'),im=x.createImageData(200,200);
+  for(let i=0;i<40000;i++){im.data[i*4]=44;im.data[i*4+1]=57;im.data[i*4+2]=86;im.data[i*4+3]=Math.pow(Math.random(),1.8)*.13*255}
+  x.putImageData(im,0,0);document.documentElement.style.setProperty('--grain',`url(${c.toDataURL()})`)}catch(e){}})();
+
+/* ---- helpers ---- */
+const $=id=>document.getElementById(id);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ALL=DATA.suits.flatMap(s=>s.cards.map(c=>({s,c})));
+const keyOf=x=>x.s.id+x.c.n;
+const secOf=c=>{const m=/^(\d+)\s*(sec|min)/.exec(c.time);return m?+m[1]*(m[2]==='min'?60:1):60};
+const state={pub:false,hist:[],cur:null,mode:'panic',step:0,suit:'breathe'};
+try{state.pub=localStorage.getItem('pd.pub')==='1'}catch(e){}
+$('pub').checked=state.pub;
+$('pub').onchange=e=>{state.pub=e.target.checked;try{localStorage.setItem('pd.pub',state.pub?'1':'0')}catch(err){}};
+
+function pick(suits){
+  let pool=ALL.filter(x=>suits.includes(x.s.id)&&(!state.pub||x.c.tag==='i'));
+  const fresh=pool.filter(x=>!state.hist.includes(keyOf(x)));
+  if(fresh.length)pool=fresh;else state.hist=[];
+  const w=pool.map(x=>{const s=secOf(x.c);return s<=60?3:s<=180?2:1});
+  let r=Math.random()*w.reduce((a,b)=>a+b,0),i=0;
+  for(;i<pool.length;i++){r-=w[i];if(r<=0)break}
+  const x=pool[Math.min(i,pool.length-1)];state.hist.push(keyOf(x));if(state.hist.length>40)state.hist.shift();return x;
+}
+
+/* ---- screens ---- */
+const screens=['home','card','breathe','deck','about'];
+function show(name,push){
+  screens.forEach(n=>$('s-'+n).hidden=n!==name);
+  if(name!=='breathe')stopBreath(true);
+  if(name!=='card')stopTimer(true);
+  if(push!==false&&location.hash!=='#'+name){try{history.pushState(null,'','#'+name)}catch(e){}}
+  window.scrollTo(0,0);
+  const h=$('s-'+name).querySelector('h1,h2,.brand');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}
+}
+addEventListener('popstate',()=>{const n=location.hash.slice(1);show(screens.includes(n)&&(n!=='card'||state.cur)?n:'home',false)});
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const n=b.dataset.go;if(n==='deck')renderDeck();show(n)});
+$('ic-i').innerHTML=svgIcon(TAG.i.d);$('ic-s').innerHTML=svgIcon(TAG.s.d);$('ic-t').innerHTML=svgIcon(TAG.t.d);
+
+/* ---- card screen ---- */
+const SERIES=['breathe','ground','reframe'];
+function openCard(x,kind){
+  state.cur=x;
+  $('fBack').innerHTML=backHTML();$('fFront').innerHTML=cardHTML(x.s,x.c);
+  const fl=$('flip');fl.classList.remove('shown');
+  show('card');
+  $('cardKind').textContent=kind||'';
+  $('msg').textContent='';
+  const d=$('dots');d.hidden=state.mode!=='series';
+  if(!d.hidden)d.innerHTML=SERIES.map((_,i)=>`<i class="${i<=state.step?'on':''}"></i>`).join('');
+  stopTimer(true);renderTimer();renderActions();
+  setTimeout(()=>fl.classList.add('shown'),reduce?20:120);
+}
+function renderActions(){
+  const a=$('actions'),x=state.cur;let h='';
+  if(x.s.id==='breathe'&&x.c.n===16)h+=`<button class="btn" id="aCircle">Open the circle</button>`;
+  if(state.mode==='series'){
+    if(state.step<SERIES.length-1)h+=`<button class="btn primary" id="aNext">Next card (${state.step+2} of 3)</button>`;
+    else h+=`<button class="btn primary" id="aLand">That's three. Land softly</button>`;
+  }else if(state.mode==='land')h+=`<button class="btn primary" id="aMore">Another Land card</button>`;
+  else if(state.mode==='open')h+=`<button class="btn primary" id="aDeck">Back to all cards</button>`;
+  else h+=`<button class="btn primary" id="aMore">Another card</button>`;
+  h+=`<button class="btn" id="aHome">I'm okay for now</button>`;
+  a.innerHTML=h;
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+  on('aCircle',()=>startBreathe(5));
+  on('aNext',()=>{state.step++;openCard(pick([SERIES[state.step]]),'Series')});
+  on('aLand',()=>drawLand());
+  on('aMore',()=>state.mode==='land'?drawLand():drawPanic());
+  on('aDeck',()=>show('deck'));
+  on('aHome',()=>show('home'));
+}
+function drawPanic(){state.mode='panic';openCard(pick(['breathe','ground','reframe','move']),'')}
+function drawLand(){state.mode='land';openCard(pick(['land']),'Land')}
+function drawSeries(){state.mode='series';state.step=0;openCard(pick([SERIES[0]]),'Series')}
+$('panic').onclick=drawPanic;$('series').onclick=drawSeries;$('land').onclick=drawLand;
+$('cardBack').onclick=()=>{state.mode==='open'?show('deck'):show('home')};
+
+/* ---- timer ---- */
+let tm=null,wl=null;
+async function lock(){try{wl=await navigator.wakeLock.request('screen')}catch(e){}}
+function unlock(){try{wl&&wl.release()}catch(e){}wl=null}
+function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function renderTimer(){
+  const t=$('timer'),total=secOf(state.cur.c);
+  t.innerHTML=`<button class="btn" id="tStart">Start ${state.cur.c.time} timer</button>`;
+  $('tStart').onclick=()=>startTimer(total);
+}
+function startTimer(total){
+  const R=34,Cc=2*Math.PI*R,end=Date.now()+total*1000;
+  $('timer').innerHTML=`<div class="ring"><svg viewBox="0 0 76 76" aria-hidden="true"><circle class="bg" cx="38" cy="38" r="${R}"/><circle class="fg" id="tFg" cx="38" cy="38" r="${R}" stroke-dasharray="${Cc}" stroke-dashoffset="0"/></svg><span id="tTxt">${fmt(total)}</span></div><button class="btn" id="tStop">Stop</button>`;
+  $('tStop').onclick=()=>{stopTimer(true);renderTimer()};
+  lock();
+  const tick=()=>{const left=(end-Date.now())/1000;
+    $('tTxt').textContent=fmt(left);$('tFg').setAttribute('stroke-dashoffset',String(Cc*(1-Math.max(0,left)/total)));
+    if(left<=0){stopTimer(true);$('timer').innerHTML=`<button class="btn" id="tStart">Run it again</button>`;$('tStart').onclick=()=>startTimer(total);$('msg').textContent="Time's up. Another card, or just stay here a moment."}};
+  tm=setInterval(tick,250);tick();
+}
+function stopTimer(quiet){if(tm){clearInterval(tm);tm=null}unlock();if(!quiet)$('msg').textContent=''}
+
+/* ---- breathing circle: in 4, out 6 ---- */
+let br=null,bmin=3;
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{bmin=+c.dataset.min;document.querySelectorAll('.chip').forEach(o=>o.setAttribute('aria-pressed',String(o===c)))});
+function setChip(m){bmin=m;document.querySelectorAll('.chip').forEach(o=>o.setAttribute('aria-pressed',String(+o.dataset.min===m)))}
+function startBreathe(m){if(m)setChip(m);show('breathe')}
+$('goBreathe').onclick=()=>startBreathe();
+$('breatheBack').onclick=()=>show('home');
+$('bgo').onclick=()=>{br?stopBreath(false):runBreath()};
+function runBreath(){
+  const start=Date.now(),end=start+bmin*60000;let last='';
+  $('bgo').textContent='Stop';lock();
+  const tick=()=>{const now=Date.now();
+    if(now>=end){stopBreath(false,true);return}
+    const p=(now-start)%10000,inh=p<4000,k=inh?'in':'out',left=Math.ceil(((inh?4000:10000)-p)/1000);
+    if(k!==last){last=k;$('orb').className='orb '+k;$('phase').textContent=inh?'Breathe in':'Breathe out'}
+    $('bcount').textContent=`${left}  ·  ${fmt((end-now)/1000)} left`;};
+  br=setInterval(tick,200);tick();
+}
+function stopBreath(silent,done){
+  if(br){clearInterval(br);br=null}unlock();
+  const o=$('orb');if(o)o.className='orb';
+  $('bgo').textContent='Start';
+  if(!silent){$('phase').textContent=done?'Well done':'Ready';$('bcount').textContent=done?'Notice how you feel now':'In for 4, out for 6'}
+  else{$('phase').textContent='Ready';$('bcount').textContent='In for 4, out for 6'}
+}
+
+/* ---- all cards ---- */
+function renderDeck(){
+  const tabs=$('tabs');
+  tabs.innerHTML=DATA.suits.map(s=>`<button class="tab" role="tab" data-s="${s.id}" aria-selected="${s.id===state.suit}"><i style="background:${PAL[s.id].bg}"></i>${s.name}</button>`).join('');
+  tabs.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.suit=b.dataset.s;renderDeck()});
+  const s=DATA.suits.find(x=>x.id===state.suit);
+  $('grid').innerHTML=s.cards.map(c=>`<button class="tile" data-n="${c.n}" aria-label="Open ${esc(s.name)} ${c.n}: ${esc(c.title)}">${cardHTML(s,c)}</button>`).join('');
+  $('grid').querySelectorAll('.tile').forEach(t=>t.onclick=()=>{state.mode='open';openCard({s,c:s.cards.find(c=>c.n===+t.dataset.n)},s.name)});
+}
+
+if('serviceWorker' in navigator&&location.protocol!=='file:'&&!/__NOSW__/.test('sw')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+show('home',false);
+</script>
+</body></html>
