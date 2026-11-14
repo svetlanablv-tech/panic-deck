@@ -34,6 +34,7 @@ body{margin:0;background:var(--navy);color:var(--paper);font-family:var(--font-b
 button{font:inherit;color:inherit;cursor:pointer}
 .link{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:10px 4px;min-height:44px}
 :focus-visible{outline:3px solid var(--peach);outline-offset:3px;border-radius:8px}
+[tabindex="-1"]:focus{outline:none}
 h1,h2{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;line-height:1.15;margin:0}
 h2{font-size:1.5rem}
 p{margin:0}
@@ -123,6 +124,14 @@ p{margin:0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .tile{border:0;background:none;padding:0;aspect-ratio:63/88;border-radius:5cqw;text-align:left}
 .tile .cw{pointer-events:none}
+.done{align-items:center;text-align:center}
+.done .center{gap:22px}
+.badge{width:min(52vw,210px);aspect-ratio:1;border-radius:50%;background:var(--peach);color:var(--ink);display:grid;place-items:center;animation:settle 1.4s ease-out both}
+.badge svg{width:46%;height:46%;fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.done h2{font-size:2rem;max-width:12em}
+.done .actions{width:100%}
+@keyframes settle{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.badge{animation:none}}
 .about p{margin-bottom:12px}
 .about ul{padding-left:0;list-style:none;margin:0 0 12px;display:flex;flex-direction:column;gap:10px}
 .about li{display:flex;gap:12px;align-items:center}
@@ -184,6 +193,16 @@ p{margin:0}
   <div class="top"><button class="link" data-go="home">Back</button><span class="brand">All 80 cards</span></div>
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="grid" id="grid"></div>
+</section>
+
+<section id="s-done" class="screen done" hidden aria-labelledby="h-done">
+  <div class="top"><span class="brand">Panic Deck</span><span></span></div>
+  <div class="center">
+    <div class="badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2 id="h-done"></h2>
+    <p class="hint" id="doneSub"></p>
+  </div>
+  <div class="actions"><button class="btn primary" id="dLand">Land softly</button><button class="btn" id="dHome">Back to start</button></div>
 </section>
 
 <section id="s-about" class="screen about" hidden aria-labelledby="h-about">
@@ -817,7 +836,7 @@ const DATA = {
     {
       "id": "howto",
       "title": "How to Use",
-      "text": "Draw one card. Do what it says. Didn't help? Draw the next one. There are no wrong cards."
+      "text": "Draw one card. Do what it says. Didn't help? Draw the next one. There are no wrong cards. Scan the code on the back to open the app."
     }
   ]
 };
@@ -887,7 +906,7 @@ function pick(suits){
 }
 
 /* ---- screens ---- */
-const screens=['home','card','breathe','deck','about'];
+const screens=['home','card','breathe','deck','about','done'];
 function show(name,push){
   screens.forEach(n=>$('s-'+n).hidden=n!==name);
   if(name!=='breathe')stopBreath(true);
@@ -931,13 +950,32 @@ function renderActions(){
   on('aLand',()=>drawLand());
   on('aMore',()=>state.mode==='land'?drawLand():drawPanic());
   on('aDeck',()=>show('deck'));
-  on('aHome',()=>show('home'));
+  on('aHome',()=>showDone());
 }
 function drawPanic(){state.mode='panic';openCard(pick(['breathe','ground','reframe','move']),'')}
 function drawLand(){state.mode='land';openCard(pick(['land']),'Land')}
 function drawSeries(){state.mode='series';state.step=0;openCard(pick([SERIES[0]]),'Series')}
 $('panic').onclick=drawPanic;$('series').onclick=drawSeries;$('land').onclick=drawLand;
 $('cardBack').onclick=()=>{state.mode==='open'?show('deck'):show('home')};
+
+/* ---- "I'm okay now": a quiet closing ---- */
+const PRAISE=[
+  ['You got through it.','The wave passed. You did that.'],
+  ['Well done.','You stayed with it. That was the hard part.'],
+  ['You did it.','It was uncomfortable, and you handled it.'],
+  ['That took courage.','Be gentle with yourself now.'],
+  ['You are okay.','Your body is settling. You helped it.'],
+  ['You handled that.','One step at a time. You are doing fine.']
+];
+let lastPraise=-1;
+function showDone(){
+  let i;do{i=Math.floor(Math.random()*PRAISE.length)}while(PRAISE.length>1&&i===lastPraise);lastPraise=i;
+  $('h-done').textContent=PRAISE[i][0];$('doneSub').textContent=PRAISE[i][1];
+  const b=document.querySelector('#s-done .badge');if(b){b.style.animation='none';void b.offsetWidth;b.style.animation=''}
+  show('done');
+}
+$('dLand').onclick=()=>drawLand();
+$('dHome').onclick=()=>show('home');
 
 /* ---- timer ---- */
 let tm=null,wl=null;
