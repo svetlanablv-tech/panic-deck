@@ -98,6 +98,7 @@ p{margin:0}
 .ring .fg{stroke:var(--peach);stroke-linecap:round}
 .ring span{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:1rem}
 .msg{text-align:center;color:var(--muted);min-height:1.5em}
+.msg.ok{color:var(--paper);font-weight:700}
 .dots{display:flex;justify-content:center;gap:8px}
 .dots[hidden]{display:none}
 .dots i{width:10px;height:10px;border-radius:50%;background:rgba(247,242,233,.25)}
@@ -344,7 +345,7 @@ const DATA = {
         },
         {
           "n": 16,
-          "title": "Follow the Circle",
+          "title": "Circle Breath",
           "text": "Open the app and breathe along with the circle for five minutes.",
           "time": "5 min",
           "tag": "t"
@@ -464,7 +465,7 @@ const DATA = {
         },
         {
           "n": 16,
-          "title": "Draw What You See",
+          "title": "Draw One Thing",
           "text": "Draw the object in front of you without lifting your pen. Or trace it in the air.",
           "time": "5 min",
           "tag": "t"
@@ -536,7 +537,7 @@ const DATA = {
         {
           "n": 9,
           "title": "Worry Window",
-          "text": "Write the worry down and give it a time later: \"I'll deal with you at 6.\" Close the page.",
+          "text": "Write the worry down. Give it a later time: \"See you at 6.\" Close the page.",
           "time": "3 min",
           "tag": "t"
         },
@@ -584,7 +585,7 @@ const DATA = {
         },
         {
           "n": 16,
-          "title": "Letter From Later",
+          "title": "Note From Later",
           "text": "Write three lines from you, a week from now, already through it.",
           "time": "5 min",
           "tag": "t"
@@ -600,7 +601,7 @@ const DATA = {
         {
           "n": 1,
           "title": "Cold Water",
-          "text": "Hold cold water, or a cold can or bottle, to your wrists or neck. Skip it if unpleasant.",
+          "text": "Hold cold water, or a cold can, to your wrists or neck. Skip it if unpleasant.",
           "time": "30 sec",
           "tag": "t"
         },
@@ -613,7 +614,7 @@ const DATA = {
         },
         {
           "n": 3,
-          "title": "Squeeze & Release",
+          "title": "Clench & Let Go",
           "text": "Clench your fists for 5 seconds, then let go. Then shoulders, jaw, toes.",
           "time": "1 min",
           "tag": "i"
@@ -656,7 +657,7 @@ const DATA = {
         {
           "n": 9,
           "title": "Window Break",
-          "text": "Step outside if you can. If not, look out a window at the farthest point. Five slow breaths.",
+          "text": "Step outside, or look out a window at the farthest point. Five slow breaths.",
           "time": "2 min",
           "tag": "i"
         },
@@ -839,7 +840,8 @@ const DATA = {
       "text": "Draw one card. Do what it says. Didn't help? Draw the next one. There are no wrong cards. Scan the code on the back to open the app."
     }
   ]
-};
+}
+;
 const TAG = {
   i:{label:'In public',d:'<circle cx="8.5" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19c0-3.4 2.3-5.4 5-5.4s5 2 5 5.4"/><path d="M14.5 14.2c.6-.3 1.3-.4 2-.4 2.3 0 4 1.7 4 4.7"/>'},
   s:{label:'Needs space',d:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'},
@@ -927,24 +929,35 @@ function openCard(x,kind){
   const fl=$('flip');fl.classList.remove('shown');
   show('card');
   $('cardKind').textContent=kind||'';
-  $('msg').textContent='';
+  $('msg').textContent='';$('msg').classList.remove('ok');
   const d=$('dots');d.hidden=state.mode!=='series';
   if(!d.hidden)d.innerHTML=SERIES.map((_,i)=>`<i class="${i<=state.step?'on':''}"></i>`).join('');
   stopTimer(true);renderTimer();renderActions();
   setTimeout(()=>fl.classList.add('shown'),reduce?20:120);
 }
+/* ---- "I did it": a short word of praise after each card, matched to the suit ---- */
+const STEP={
+  breathe:['Good. You slowed it down.','Nice breathing. Well done.','You gave your body a slower rhythm. Well done.'],
+  ground:['You came back to the room. Well done.','Good. You are here, and you noticed it.','Nice. One step at a time.'],
+  reframe:['Good. You gave the thought a little space.','Well done. You looked at it, not only felt it.','Nice work. That took focus.'],
+  move:['Good. You moved. Well done.','Nice. Your body had something to do.','Well done. That was a real step.'],
+  land:['You did it. Be gentle with yourself.','Well done. Rest a moment.','Good. You can take it slow now.']
+};
+const praise=()=>{const a=STEP[state.cur.s.id]||STEP.breathe;return a[Math.floor(Math.random()*a.length)]};
 function renderActions(){
   const a=$('actions'),x=state.cur;let h='';
   if(x.s.id==='breathe'&&x.c.n===16)h+=`<button class="btn" id="aCircle">Open the circle</button>`;
+  h+=`<button class="btn primary" id="aDid">I did it</button>`;
   if(state.mode==='series'){
-    if(state.step<SERIES.length-1)h+=`<button class="btn primary" id="aNext">Next card (${state.step+2} of 3)</button>`;
-    else h+=`<button class="btn primary" id="aLand">That's three. Land softly</button>`;
-  }else if(state.mode==='land')h+=`<button class="btn primary" id="aMore">Another Land card</button>`;
-  else if(state.mode==='open')h+=`<button class="btn primary" id="aDeck">Back to all cards</button>`;
-  else h+=`<button class="btn primary" id="aMore">Another card</button>`;
+    if(state.step<SERIES.length-1)h+=`<button class="btn" id="aNext">Next card (${state.step+2} of 3)</button>`;
+    else h+=`<button class="btn" id="aLand">That's three. Land softly</button>`;
+  }else if(state.mode==='land')h+=`<button class="btn" id="aMore">Another Land card</button>`;
+  else if(state.mode==='open')h+=`<button class="btn" id="aDeck">Back to all cards</button>`;
+  else h+=`<button class="btn" id="aMore">Another card</button>`;
   h+=`<button class="btn" id="aHome">I'm okay for now</button>`;
   a.innerHTML=h;
   const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+  on('aDid',()=>{const m=$('msg');m.textContent=praise();m.classList.add('ok')});
   on('aCircle',()=>startBreathe(5));
   on('aNext',()=>{state.step++;openCard(pick([SERIES[state.step]]),'Series')});
   on('aLand',()=>drawLand());
@@ -994,7 +1007,7 @@ function startTimer(total){
   lock();
   const tick=()=>{const left=(end-Date.now())/1000;
     $('tTxt').textContent=fmt(left);$('tFg').setAttribute('stroke-dashoffset',String(Cc*(1-Math.max(0,left)/total)));
-    if(left<=0){stopTimer(true);$('timer').innerHTML=`<button class="btn" id="tStart">Run it again</button>`;$('tStart').onclick=()=>startTimer(total);$('msg').textContent="Time's up. Another card, or just stay here a moment."}};
+    if(left<=0){stopTimer(true);$('timer').innerHTML=`<button class="btn" id="tStart">Run it again</button>`;$('tStart').onclick=()=>startTimer(total);$('msg').textContent="Time's up. "+praise()+" Another card, or just stay here a moment.";$('msg').classList.add('ok')}};
   tm=setInterval(tick,250);tick();
 }
 function stopTimer(quiet){if(tm){clearInterval(tm);tm=null}unlock();if(!quiet)$('msg').textContent=''}
