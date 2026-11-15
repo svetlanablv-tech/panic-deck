@@ -61,6 +61,17 @@ p{margin:0}
 .btn{min-height:52px;border-radius:14px;border:1.5px solid var(--line);background:transparent;padding:10px 12px;font-family:var(--font-display);font-weight:700;font-size:.95rem;line-height:1.2}
 .btn.primary{background:var(--peach);color:var(--ink);border-color:var(--peach)}
 .btn.full{grid-column:1/-1}
+/* short phones: keep the whole home screen in view, nothing to scroll for */
+@media (max-height:760px){
+  .screen{gap:12px;padding-block:8px 14px}
+  #s-home .center{gap:8px;padding-block:2px}
+  #s-home .panic{width:min(40vw,150px);box-shadow:0 0 0 8px rgba(240,184,160,.16),0 0 0 18px rgba(240,184,160,.08);animation:none}
+  .toggle{min-height:56px;padding:10px 14px}
+  .btn{min-height:46px;padding:8px 10px}
+  .row{gap:8px}
+  .pick{gap:6px}
+  .schip{min-height:40px}
+}
 .btn:active{transform:scale(.98)}
 
 /* card + flip */
