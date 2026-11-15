@@ -116,6 +116,12 @@ p{margin:0}
 .chips{display:flex;gap:8px;justify-content:center}
 .chip{min-height:44px;padding:8px 18px;border-radius:99px;border:1.5px solid var(--line);background:transparent;font-family:var(--font-display);font-weight:700}
 .chip[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.pick{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.pick .lbl{font-size:.85rem;color:var(--muted);text-align:center}
+.schips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.schip{min-height:44px;border-radius:99px;border:1.5px solid var(--line);background:transparent;padding:6px 14px 6px 10px;font-family:var(--font-display);font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:8px}
+.schip i{width:16px;height:16px;border-radius:50%;flex:none}
+.schip:active{transform:scale(.97)}
 
 /* deck + about */
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
@@ -165,8 +171,9 @@ p{margin:0}
   <div class="row">
     <button class="btn" id="series">3 cards in a row</button>
     <button class="btn" id="goBreathe">Breathe with me</button>
-    <button class="btn" id="land">It passed. Land softly</button>
-    <button class="btn" data-go="deck">All 80 cards</button>
+    <button class="btn full" id="land">It passed. Land softly</button>
+    <div class="pick"><div class="lbl" id="pickLbl">Or choose a suit</div><div class="schips" id="schips" role="group" aria-labelledby="pickLbl"></div></div>
+    <button class="btn full" data-go="deck">All 80 cards</button>
   </div>
 </section>
 
@@ -961,13 +968,16 @@ function renderActions(){
   on('aCircle',()=>startBreathe(5));
   on('aNext',()=>{state.step++;openCard(pick([SERIES[state.step]]),'Series')});
   on('aLand',()=>drawLand());
-  on('aMore',()=>state.mode==='land'?drawLand():drawPanic());
+  on('aMore',()=>state.mode==='land'?drawLand():state.mode==='suit'?drawSuit(state.suitPick):drawPanic());
   on('aDeck',()=>show('deck'));
   on('aHome',()=>showDone());
 }
 function drawPanic(){state.mode='panic';openCard(pick(['breathe','ground','reframe','move']),'')}
 function drawLand(){state.mode='land';openCard(pick(['land']),'Land')}
 function drawSeries(){state.mode='series';state.step=0;openCard(pick([SERIES[0]]),'Series')}
+function drawSuit(id){const su=DATA.suits.find(s=>s.id===id);state.mode='suit';state.suitPick=id;openCard(pick([id]),su?su.name:'')}
+$('schips').innerHTML=DATA.suits.map(su=>`<button class="schip" data-suit="${su.id}"><i style="background:${PAL[su.id].bg}"></i>${su.name}</button>`).join('');
+$('schips').querySelectorAll('.schip').forEach(b=>b.onclick=()=>b.dataset.suit==='land'?drawLand():drawSuit(b.dataset.suit));
 $('panic').onclick=drawPanic;$('series').onclick=drawSeries;$('land').onclick=drawLand;
 $('cardBack').onclick=()=>{state.mode==='open'?show('deck'):show('home')};
 
